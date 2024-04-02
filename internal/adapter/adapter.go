@@ -24,3 +24,46 @@ func (project *ProjectAdapter) CreateGig(req entities.Gig) error {
 	}
 	return nil
 }
+
+func (project *ProjectAdapter) GetPackgeTypeByName(name string) (entities.PackageType, error) {
+	var res entities.PackageType
+	query := "SELECT * FROM package_types WHERE type = ?"
+	if err := project.DB.Raw(query, name).Scan(&res).Error; err != nil {
+		return entities.PackageType{}, err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) GetPackgeTypeById(id int32) (entities.PackageType, error) {
+	var res entities.PackageType
+	query := "SELECT * FROM package_types WHERE id = ?"
+	if err := project.DB.Raw(query, id).Scan(&res).Error; err != nil {
+		return entities.PackageType{}, err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) AddPackageType(name string) error {
+	query := "INSERT INTO package_types (type) VALUES ($1)"
+	if err := project.DB.Exec(query, name).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (project *ProjectAdapter) EditPackgeType(req entities.PackageType) error {
+	query := "UPDATE package_types SET type = $1 WHERE id = $2"
+	if err := project.DB.Exec(query, req.Type, req.Id).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (project *ProjectAdapter) GetAllPAckageType() ([]entities.PackageType, error) {
+	var res []entities.PackageType
+	query := "SELECT * FROM pakcage_types"
+	if err := project.DB.Raw(query).Scan(&res).Error; err != nil {
+		return []entities.PackageType{}, err
+	}
+	return res, nil
+}

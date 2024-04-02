@@ -3,7 +3,7 @@ module github.com/Nishad4140/SkillSync_ProjectService
 go 1.21.0
 
 require (
-	github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240401092800-02d64554e3cd
+	github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240402043106-a8992232767b
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	gorm.io/driver/postgres v1.5.7
