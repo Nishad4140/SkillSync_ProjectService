@@ -25,6 +25,41 @@ func (project *ProjectAdapter) CreateGig(req entities.Gig) error {
 	return nil
 }
 
+func (project *ProjectAdapter) UpdateGig(req entities.Gig) error {
+	query := "UPDATE gigs SET title = $1, category_id = $2, skill_id = $3, description = $4, package_type_id = $5, price = $6, delivery_days = $7 WHERE id = $8"
+	if err := project.DB.Exec(query, req.Title, req.CategoryId, req.SkillId, req.Description, req.PackageTypeId, req.Price, req.DeliveryDays, req.ID).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (project *ProjectAdapter) GetGigById(id string) (entities.Gig, error) {
+	var res entities.Gig
+	query := "SELECT * FROM gigs WHERE id = ?"
+	if err := project.DB.Raw(query, id).Scan(&res).Error; err != nil {
+		return entities.Gig{}, err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) GetAllFreelancerGigs(freelancerId string) ([]entities.Gig, error) {
+	var res []entities.Gig
+	query := "SELECT * FROM gigs WHERE freelancer_id = ?"
+	if err := project.DB.Raw(query, freelancerId).Scan(&res).Error; err != nil {
+		return []entities.Gig{}, err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) GetAllGigs() ([]entities.Gig, error) {
+	var res []entities.Gig
+	query := "SELECT * FROM gigs"
+	if err := project.DB.Raw(query).Scan(&res).Error; err != nil {
+		return []entities.Gig{}, err
+	}
+	return res, nil
+}
+
 func (project *ProjectAdapter) GetPackgeTypeByName(name string) (entities.PackageType, error) {
 	var res entities.PackageType
 	query := "SELECT * FROM package_types WHERE type = ?"
@@ -61,7 +96,7 @@ func (project *ProjectAdapter) EditPackgeType(req entities.PackageType) error {
 
 func (project *ProjectAdapter) GetAllPAckageType() ([]entities.PackageType, error) {
 	var res []entities.PackageType
-	query := "SELECT * FROM pakcage_types"
+	query := "SELECT * FROM package_types"
 	if err := project.DB.Raw(query).Scan(&res).Error; err != nil {
 		return []entities.PackageType{}, err
 	}
