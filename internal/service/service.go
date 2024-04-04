@@ -7,6 +7,7 @@ import (
 
 	"github.com/Nishad4140/SkillSync_ProjectService/entities"
 	"github.com/Nishad4140/SkillSync_ProjectService/internal/adapter"
+	"github.com/Nishad4140/SkillSync_ProjectService/internal/helper"
 	"github.com/Nishad4140/SkillSync_ProjectService/internal/usecase"
 	"github.com/Nishad4140/SkillSync_ProtoFiles/pb"
 	"github.com/google/uuid"
@@ -197,6 +198,130 @@ func (project *ProjectService) GetAllGigs(e *emptypb.Empty, srv pb.ProjectServic
 			PackageTypeId: int32(gig.PackageTypeId),
 			Price:         float32(gig.Price),
 			DelivaryDays:  gig.DeliveryDays,
+		}
+		if err := srv.Send(res); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (project *ProjectService) ClientAddRequest(ctx context.Context, req *pb.AddClientGigRequest) (*emptypb.Empty, error) {
+	clientId, err := uuid.Parse(req.ClientId)
+	if err != nil {
+		return nil, err
+	}
+	delivaryDate, err := helper.ConvertStringToDate(req.DeliveryDate)
+	if err != nil {
+		return nil, err
+	}
+	reqEntity := entities.ClientRequest{
+		ClientId:     clientId,
+		Title:        req.Title,
+		CategoryId:   int(req.CategoryId),
+		SkillId:      int(req.SkillId),
+		Description:  req.Description,
+		Price:        float64(req.Price),
+		DelivaryDate: delivaryDate,
+	}
+	if err := project.adapters.ClientAddRequest(reqEntity); err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (project *ProjectService) ClientUpdateRequest(ctx context.Context, req *pb.ClientRequestResponse) (*emptypb.Empty, error) {
+	clientId, err := uuid.Parse(req.ClientId)
+	if err != nil {
+		return nil, err
+	}
+	reqId, err := uuid.Parse(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	delivaryDate, err := helper.ConvertStringToDate(req.DeliveryDate)
+	if err != nil {
+		return nil, err
+	}
+	reqEntity := entities.ClientRequest{
+		ID:           reqId,
+		ClientId:     clientId,
+		Title:        req.Title,
+		CategoryId:   int(req.CategoryId),
+		SkillId:      int(req.SkillId),
+		Description:  req.Description,
+		Price:        float64(req.Price),
+		DelivaryDate: delivaryDate,
+	}
+	if err := project.adapters.ClientUpdateRequest(reqEntity); err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (project *ProjectService) GetClientRequest(ctx context.Context, req *pb.GetById) (*pb.ClientRequestResponse, error) {
+	clientReq, err := project.adapters.GetClientRequest(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	res := &pb.ClientRequestResponse{
+		Id:           clientReq.ID.String(),
+		ClientId:     clientReq.ClientId.String(),
+		Title:        clientReq.Title,
+		CategoryId:   int32(clientReq.CategoryId),
+		SkillId:      int32(clientReq.SkillId),
+		Price:        float32(clientReq.Price),
+		Description:  clientReq.Description,
+		DeliveryDate: clientReq.DelivaryDate.String(),
+	}
+	return res, nil
+}
+
+func (project *ProjectService) GetAllClientRequest(req *pb.GetByUserId, srv pb.ProjectService_GetAllClientRequestServer) error {
+	clientReqs, err := project.adapters.GetAllClientRequest(req.Id)
+	if err != nil {
+		return err
+	}
+
+	for _, clientReq := range clientReqs {
+		res := &pb.ClientRequestResponse{
+			Id:           clientReq.ID.String(),
+			ClientId:     clientReq.ClientId.String(),
+			Title:        clientReq.Title,
+			CategoryId:   int32(clientReq.CategoryId),
+			SkillId:      int32(clientReq.SkillId),
+			Price:        float32(clientReq.Price),
+			Description:  clientReq.Description,
+			DeliveryDate: clientReq.DelivaryDate.String(),
+		}
+		if err := srv.Send(res); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (project *ProjectService) GetAllClientRequestForFreelancers(req *pb.GetByUserId, srv pb.ProjectService_GetAllClientRequestForFreelancersServer) error {
+	freelancerData, err := UserClient.GetFreelancerById(context.Background(), &pb.GetUserById{
+		Id: req.Id,
+	})
+	if err != nil {
+		return err
+	}
+	clientReqs, err := project.adapters.GetAllClientRequestForFreelancers(int(freelancerData.CategoryId))
+	if err != nil {
+		return err
+	}
+	for _, clientReq := range clientReqs {
+		res := &pb.ClientRequestResponse{
+			Id:           clientReq.ID.String(),
+			ClientId:     clientReq.ClientId.String(),
+			Title:        clientReq.Title,
+			CategoryId:   int32(clientReq.CategoryId),
+			SkillId:      int32(clientReq.SkillId),
+			Price:        float32(clientReq.Price),
+			Description:  clientReq.Description,
+			DeliveryDate: clientReq.DelivaryDate.String(),
 		}
 		if err := srv.Send(res); err != nil {
 			return err

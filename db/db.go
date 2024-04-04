@@ -17,6 +17,9 @@ func InitDB(connectTo string) (*gorm.DB, error) {
 	db.AutoMigrate(
 		&entities.Gig{},
 		&entities.PackageType{},
+		&entities.ClientRequest{},
+		&entities.GigImages{},
+		&entities.ClientRequestImages{},
 	)
 
 	return db, nil

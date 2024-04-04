@@ -1,6 +1,10 @@
 package entities
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Gig struct {
 	ID            uuid.UUID `gorm:"primaryKey;unique;not null"`
@@ -15,11 +19,29 @@ type Gig struct {
 	DeliveryDays  string
 }
 
-type Images struct {
+type ClientRequest struct {
+	ID           uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ClientId     uuid.UUID
+	Title        string
+	CategoryId   int
+	SkillId      int
+	Description  string
+	Price        float64
+	DelivaryDate time.Time `gorm:"type:date"`
+}
+
+type GigImages struct {
 	Id    uuid.UUID `gorm:"primaryKey;unique;not null"`
 	GigId uuid.UUID
 	Gig   Gig `gorm:"foreignKey:GigId"`
 	Image string
+}
+
+type ClientRequestImages struct {
+	Id              uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ClientRequestId uuid.UUID
+	ClientRequest   ClientRequest `gorm:"foreignKey:ClientRequestId"`
+	Image           string
 }
 
 type PackageType struct {

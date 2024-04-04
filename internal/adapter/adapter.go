@@ -60,6 +60,51 @@ func (project *ProjectAdapter) GetAllGigs() ([]entities.Gig, error) {
 	return res, nil
 }
 
+func (project *ProjectAdapter) ClientAddRequest(req entities.ClientRequest) error {
+	id := uuid.New()
+	query := "INSERT INTO client_requests (id, client_id, title, category_id, skill_id, description, price, delivary_date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+	if err := project.DB.Exec(query, id, req.ClientId, req.Title, req.CategoryId, req.SkillId, req.Description, req.Price, req.DelivaryDate).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (project *ProjectAdapter) ClientUpdateRequest(req entities.ClientRequest) error {
+	query := "UPDATE client_requests SET title = $1, category_id = $2, skill_id = $3, description  =$4, price = $5, delivary_date = $6 WHERE id = $7"
+	if err := project.DB.Exec(query, req.Title, req.CategoryId, req.SkillId, req.Description, req.Price, req.DelivaryDate, req.ID).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (project *ProjectAdapter) GetClientRequest(reqId string) (entities.ClientRequest, error) {
+	var res entities.ClientRequest
+	query := "SELECT * FROM client_requests WHERE id = ?"
+	if err := project.DB.Raw(query, reqId).Scan(&res).Error; err != nil {
+		return entities.ClientRequest{}, err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) GetAllClientRequest(clientId string) ([]entities.ClientRequest, error) {
+	var res []entities.ClientRequest
+	query := "SELECT * FROM client_requests WHERE client_id = ?"
+	if err := project.DB.Raw(query, clientId).Scan(&res).Error; err != nil {
+		return []entities.ClientRequest{}, err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) GetAllClientRequestForFreelancers(categoryId int) ([]entities.ClientRequest, error) {
+	var res []entities.ClientRequest
+
+	query := "SELECT * FROM client_requests WHERE category_id = ?"
+	if err := project.DB.Raw(query, categoryId).Scan(&res).Error; err != nil {
+		return []entities.ClientRequest{}, err
+	}
+	return res, nil
+}
+
 func (project *ProjectAdapter) GetPackgeTypeByName(name string) (entities.PackageType, error) {
 	var res entities.PackageType
 	query := "SELECT * FROM package_types WHERE type = ?"
