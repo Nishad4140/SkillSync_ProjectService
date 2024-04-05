@@ -16,6 +16,7 @@ import (
 
 var (
 	UserClient pb.UserServiceClient
+	NotiClient pb.NotificationServiceClient
 )
 
 type ProjectService struct {
@@ -385,6 +386,83 @@ func (project *ProjectService) GetPackageType(e *emptypb.Empty, srv pb.ProjectSe
 		}
 		err := srv.Send(res)
 		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (project *ProjectService) ShowIntrest(ctx context.Context, req *pb.IntrestRequest) (*emptypb.Empty, error) {
+	freelancerId, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+	reqId, err := uuid.Parse(req.RequestId)
+	if err != nil {
+		return nil, err
+	}
+	gigId, err := uuid.Parse(req.GigId)
+	if err != nil {
+		return nil, err
+	}
+	reqEntity := entities.Intrest{
+		ClientRequestId: reqId,
+		FreelancerId:    freelancerId,
+		GigId:           gigId,
+	}
+
+	if err := project.adapters.AddIntrestToClientRequest(reqEntity); err != nil {
+		return nil, err
+	}
+
+	clientId, err := project.adapters.GetClientIdByRequestId(req.RequestId)
+	if err != nil {
+		return nil, err
+	}
+
+	freelancerData, err := UserClient.GetFreelancerById(context.Background(), &pb.GetUserById{
+		Id: req.UserId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	clientRequest, err := project.adapters.GetClientRequest(req.RequestId)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := NotiClient.AddNotification(context.Background(), &pb.AddNotificationRequest{
+		UserId:       clientId,
+		Notification: fmt.Sprintf(`"message": "%s intrested on your %s titled request"`, freelancerData.Name, clientRequest.Title),
+	}); err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (project *ProjectService) GetAllIntrest(req *pb.GetAllIntrestRequest, srv pb.ProjectService_GetAllIntrestServer) error {
+	reqs, err := project.adapters.GetAllClientRequestIntrest(req.RequestId)
+	if err != nil {
+		return err
+	}
+
+	for _, req := range reqs {
+		freelancerData, err := UserClient.GetFreelancerById(context.Background(), &pb.GetUserById{
+			Id: req.FreelancerId.String(),
+		})
+		if err != nil {
+			return err
+		}
+
+		res := &pb.IntrestResponse{
+			Id:        req.Id.String(),
+			UserId:    req.FreelancerId.String(),
+			Name:      freelancerData.Name,
+			RequestId: req.ClientRequestId.String(),
+			GigId:     req.GigId.String(),
+		}
+		if err := srv.Send(res); err != nil {
 			return err
 		}
 	}

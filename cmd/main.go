@@ -28,13 +28,20 @@ func main() {
 		log.Fatal("error while connecting to user service")
 	}
 
+	notiConn, err := grpc.Dial("localhost:4007", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal("error while connecting to notification service")
+	}
+
 	defer func() {
 		userConn.Close()
 	}()
 
 	userRes := pb.NewUserServiceClient(userConn)
+	notiRes := pb.NewNotificationServiceClient(notiConn)
 
 	service.UserClient = userRes
+	service.NotiClient = notiRes
 
 	services := initializer.Initializer(db)
 	server := grpc.NewServer()

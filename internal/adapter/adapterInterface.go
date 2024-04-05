@@ -8,6 +8,7 @@ type AdapterInterface interface {
 	GetGigById(id string) (entities.Gig, error)
 	GetAllFreelancerGigs(freelancerId string) ([]entities.Gig, error)
 	GetAllClientRequestForFreelancers(categoryId int) ([]entities.ClientRequest, error)
+	AddIntrestToClientRequest(req entities.Intrest) error
 
 	AddPackageType(name string) error
 	EditPackgeType(req entities.PackageType) error
@@ -19,6 +20,8 @@ type AdapterInterface interface {
 	ClientUpdateRequest(req entities.ClientRequest) error
 	GetClientRequest(reqId string) (entities.ClientRequest, error)
 	GetAllClientRequest(clientId string) ([]entities.ClientRequest, error)
+	GetAllClientRequestIntrest(reqId string) ([]entities.Intrest, error)
+	GetClientIdByRequestId(reqId string) (string, error)
 
 	GetAllGigs() ([]entities.Gig, error)
 }

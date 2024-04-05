@@ -48,3 +48,12 @@ type PackageType struct {
 	Id   int
 	Type string
 }
+
+type Intrest struct {
+	Id              uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ClientRequestId uuid.UUID
+	ClientRequest   ClientRequest `gorm:"foreignKey:ClientRequestId"`
+	FreelancerId    uuid.UUID
+	GigId           uuid.UUID
+	Gig             Gig `gorm:"foreignKey:GigId"`
+}

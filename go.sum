@@ -14,6 +14,12 @@ github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404054757-3e0280492613 h1
 github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404054757-3e0280492613/go.mod h1:0iV86r5XZHcQ1BUErHL0ok4aagP2k+jTDwCAxb2giEc=
 github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404055604-31e854389384 h1:pxFzaT1hJX9SFu5m4pXUwHz+euGAYjPZR7dtYnE4Ot0=
 github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404055604-31e854389384/go.mod h1:0iV86r5XZHcQ1BUErHL0ok4aagP2k+jTDwCAxb2giEc=
+github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404121629-2e8f8c7c68fd h1:ZY+5PdMT1wmNa9DarQhyXqUfIXV28YXFdq9h9yRvuoA=
+github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404121629-2e8f8c7c68fd/go.mod h1:0iV86r5XZHcQ1BUErHL0ok4aagP2k+jTDwCAxb2giEc=
+github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404144122-f8f38552e8e6 h1:ZIwQOfS1en2kFdpsDxUu/846h0oAPhozLek+t2ufFvU=
+github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404144122-f8f38552e8e6/go.mod h1:0iV86r5XZHcQ1BUErHL0ok4aagP2k+jTDwCAxb2giEc=
+github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404153706-72a944048c0a h1:F+tDoChES2CuVggNeNCgpx4ZEajzjcXYus4IcJyqv2I=
+github.com/Nishad4140/SkillSync_ProtoFiles v0.0.0-20240404153706-72a944048c0a/go.mod h1:0iV86r5XZHcQ1BUErHL0ok4aagP2k+jTDwCAxb2giEc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

@@ -62,7 +62,7 @@ func (project *ProjectAdapter) GetAllGigs() ([]entities.Gig, error) {
 
 func (project *ProjectAdapter) ClientAddRequest(req entities.ClientRequest) error {
 	id := uuid.New()
-	query := "INSERT INTO client_requests (id, client_id, title, category_id, skill_id, description, price, delivary_date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+	query := "INSERT INTO client_requests (id, client_id, title, category_id, skill_id, description, price, delivary_date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
 	if err := project.DB.Exec(query, id, req.ClientId, req.Title, req.CategoryId, req.SkillId, req.Description, req.Price, req.DelivaryDate).Error; err != nil {
 		return err
 	}
@@ -144,6 +144,36 @@ func (project *ProjectAdapter) GetAllPAckageType() ([]entities.PackageType, erro
 	query := "SELECT * FROM package_types"
 	if err := project.DB.Raw(query).Scan(&res).Error; err != nil {
 		return []entities.PackageType{}, err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) AddIntrestToClientRequest(req entities.Intrest) error {
+	id := uuid.New()
+
+	query := "INSERT INTO intrests (id, client_request_id, freelancer_id, gig_id) VALUES ($1, $2, $3, $4)"
+	if err := project.DB.Exec(query, id, req.ClientRequestId, req.FreelancerId, req.GigId).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (project *ProjectAdapter) GetAllClientRequestIntrest(reqId string) ([]entities.Intrest, error) {
+	var res []entities.Intrest
+
+	query := "SELECT * FROM intrests WHERE client_request_id = ?"
+	if err := project.DB.Raw(query, reqId).Scan(res).Error; err != nil {
+		return []entities.Intrest{}, err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) GetClientIdByRequestId(reqId string) (string, error) {
+	var res string
+
+	query := "SELECT client_id FROM client_requests WHERE id = ?"
+	if err := project.DB.Raw(query, reqId).Scan(&res).Error; err != nil {
+		return "", err
 	}
 	return res, nil
 }

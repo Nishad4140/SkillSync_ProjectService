@@ -20,6 +20,7 @@ func InitDB(connectTo string) (*gorm.DB, error) {
 		&entities.ClientRequest{},
 		&entities.GigImages{},
 		&entities.ClientRequestImages{},
+		&entities.Intrest{},
 	)
 
 	return db, nil
