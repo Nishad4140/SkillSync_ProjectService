@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/Nishad4140/SkillSync_ProjectService/entities"
 	"github.com/Nishad4140/SkillSync_ProjectService/internal/adapter"
 	"github.com/Nishad4140/SkillSync_ProjectService/internal/helper"
+	helperstruct "github.com/Nishad4140/SkillSync_ProjectService/internal/helperStruct"
 	"github.com/Nishad4140/SkillSync_ProjectService/internal/usecase"
+	"github.com/Nishad4140/SkillSync_ProjectService/kafka"
 	"github.com/Nishad4140/SkillSync_ProtoFiles/pb"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -182,8 +185,17 @@ func (project *ProjectService) GetAllFreelancerGigs(req *pb.GetByUserId, srv pb.
 	return nil
 }
 
-func (project *ProjectService) GetAllGigs(e *emptypb.Empty, srv pb.ProjectService_GetAllGigsServer) error {
-	gigs, err := project.adapters.GetAllGigs()
+func (project *ProjectService) GetAllGigs(req *pb.GigFilterQuery, srv pb.ProjectService_GetAllGigsServer) error {
+
+	reqEntity := helperstruct.FilterQuery{
+		Page:     int(req.Page),
+		Limit:    int(req.Limit),
+		Query:    req.Query,
+		Filter:   req.Filter,
+		SortBy:   req.SortBy,
+		SortDesc: req.SortDesc,
+	}
+	gigs, err := project.adapters.GetAllGigs(reqEntity)
 	if err != nil {
 		return err
 	}
@@ -278,8 +290,16 @@ func (project *ProjectService) GetClientRequest(ctx context.Context, req *pb.Get
 	return res, nil
 }
 
-func (project *ProjectService) GetAllClientRequest(req *pb.GetByUserId, srv pb.ProjectService_GetAllClientRequestServer) error {
-	clientReqs, err := project.adapters.GetAllClientRequest(req.Id)
+func (project *ProjectService) GetAllClientRequest(req *pb.RequestFilterQuery, srv pb.ProjectService_GetAllClientRequestServer) error {
+	reqEntity := helperstruct.FilterQuery{
+		Page:     int(req.Page),
+		Limit:    int(req.Limit),
+		Query:    req.Query,
+		Filter:   req.Filter,
+		SortBy:   req.SortBy,
+		SortDesc: req.SortDesc,
+	}
+	clientReqs, err := project.adapters.GetAllClientRequest(req.UserId, reqEntity)
 	if err != nil {
 		return err
 	}
@@ -302,14 +322,22 @@ func (project *ProjectService) GetAllClientRequest(req *pb.GetByUserId, srv pb.P
 	return nil
 }
 
-func (project *ProjectService) GetAllClientRequestForFreelancers(req *pb.GetByUserId, srv pb.ProjectService_GetAllClientRequestForFreelancersServer) error {
+func (project *ProjectService) GetAllClientRequestForFreelancers(req *pb.RequestFilterQuery, srv pb.ProjectService_GetAllClientRequestForFreelancersServer) error {
 	freelancerData, err := UserClient.GetFreelancerById(context.Background(), &pb.GetUserById{
-		Id: req.Id,
+		Id: req.UserId,
 	})
 	if err != nil {
 		return err
 	}
-	clientReqs, err := project.adapters.GetAllClientRequestForFreelancers(int(freelancerData.CategoryId))
+	reqEntity := helperstruct.FilterQuery{
+		Page:     int(req.Page),
+		Limit:    int(req.Limit),
+		Query:    req.Query,
+		Filter:   req.Filter,
+		SortBy:   req.SortBy,
+		SortDesc: req.SortDesc,
+	}
+	clientReqs, err := project.adapters.GetAllClientRequestForFreelancers(int(freelancerData.CategoryId), reqEntity)
 	if err != nil {
 		return err
 	}
@@ -405,6 +433,7 @@ func (project *ProjectService) ShowIntrest(ctx context.Context, req *pb.IntrestR
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("1")
 	reqEntity := entities.Intrest{
 		ClientRequestId: reqId,
 		FreelancerId:    freelancerId,
@@ -414,7 +443,7 @@ func (project *ProjectService) ShowIntrest(ctx context.Context, req *pb.IntrestR
 	if err := project.adapters.AddIntrestToClientRequest(reqEntity); err != nil {
 		return nil, err
 	}
-
+	fmt.Println("2")
 	clientId, err := project.adapters.GetClientIdByRequestId(req.RequestId)
 	if err != nil {
 		return nil, err
@@ -426,18 +455,19 @@ func (project *ProjectService) ShowIntrest(ctx context.Context, req *pb.IntrestR
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("3")
 	clientRequest, err := project.adapters.GetClientRequest(req.RequestId)
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("4")
 	if _, err := NotiClient.AddNotification(context.Background(), &pb.AddNotificationRequest{
 		UserId:       clientId,
-		Notification: fmt.Sprintf(`"message": "%s intrested on your %s titled request"`, freelancerData.Name, clientRequest.Title),
+		Notification: fmt.Sprintf(`{"message" : "%s intrested on your %s titled request"}`, freelancerData.Name, clientRequest.Title),
 	}); err != nil {
 		return nil, err
 	}
+	fmt.Println("5")
 	return nil, nil
 }
 
@@ -467,4 +497,49 @@ func (project *ProjectService) GetAllIntrest(req *pb.GetAllIntrestRequest, srv p
 		}
 	}
 	return nil
+}
+
+func (project *ProjectService) ClientIntrestAcknowledgment(ctx context.Context, req *pb.IntrestAcknowledgmentRequest) (*emptypb.Empty, error) {
+	clientId, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, err
+	}
+	intrestId, err := uuid.Parse(req.IntrestId)
+	if err != nil {
+		return nil, err
+	}
+	reqEntity := entities.IntrestAcknowledgment{
+		ClientId:  clientId,
+		IntrestId: intrestId,
+	}
+	if err := project.adapters.ClientAddIntrestAcknowledgment(reqEntity); err != nil {
+		return nil, err
+	}
+	intrest, err := project.adapters.GetIntrestById(req.IntrestId)
+	if err != nil {
+		return nil, err
+	}
+
+	freelancerData, err := UserClient.GetFreelancerById(context.Background(), &pb.GetUserById{
+		Id: intrest.FreelancerId.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	clientData, err := UserClient.GetClientById(context.Background(), &pb.GetUserById{
+		Id: req.UserId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	Clinetreq, err := project.adapters.GetClientRequest(intrest.ClientRequestId.String())
+	if err != nil {
+		return nil, err
+	}
+	if err := kafka.IntrestAcknowledgment(freelancerData.Email, clientData.Name, Clinetreq.Title); err != nil {
+		log.Println("error happened in pushing to stream", err)
+	}
+	return nil, nil
 }

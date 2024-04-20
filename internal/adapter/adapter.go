@@ -1,7 +1,11 @@
 package adapter
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/Nishad4140/SkillSync_ProjectService/entities"
+	helperstruct "github.com/Nishad4140/SkillSync_ProjectService/internal/helperStruct"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -51,9 +55,31 @@ func (project *ProjectAdapter) GetAllFreelancerGigs(freelancerId string) ([]enti
 	return res, nil
 }
 
-func (project *ProjectAdapter) GetAllGigs() ([]entities.Gig, error) {
+func (project *ProjectAdapter) GetAllGigs(queryParams helperstruct.FilterQuery) ([]entities.Gig, error) {
 	var res []entities.Gig
 	query := "SELECT * FROM gigs"
+
+	if queryParams.Query != "" && queryParams.Filter != "" {
+		query = fmt.Sprintf("%s WHERE LOWER(%s) LIKE '%%%s%%'", query, queryParams.Filter, strings.ToLower(queryParams.Query))
+	}
+
+	if queryParams.SortBy != "" {
+		if queryParams.SortDesc {
+			query = fmt.Sprintf("%s ORDER BY %s DESC", query, queryParams.SortBy)
+		} else {
+			query = fmt.Sprintf("%s ORDER BY %s ASC", query, queryParams.SortBy)
+		}
+	} else {
+		query = fmt.Sprintf("%s ORDER BY price ASC", query)
+	}
+	//to set the page number and the qty that need to display in a single responce
+	if queryParams.Limit != 0 && queryParams.Page != 0 {
+		query = fmt.Sprintf("%s LIMIT %d OFFSET %d", query, queryParams.Limit, (queryParams.Page-1)*queryParams.Limit)
+	}
+	if queryParams.Limit == 0 || queryParams.Page == 0 {
+		query = fmt.Sprintf("%s LIMIT 10 OFFSET 0", query)
+	}
+
 	if err := project.DB.Raw(query).Scan(&res).Error; err != nil {
 		return []entities.Gig{}, err
 	}
@@ -86,19 +112,63 @@ func (project *ProjectAdapter) GetClientRequest(reqId string) (entities.ClientRe
 	return res, nil
 }
 
-func (project *ProjectAdapter) GetAllClientRequest(clientId string) ([]entities.ClientRequest, error) {
+func (project *ProjectAdapter) GetAllClientRequest(clientId string, queryParams helperstruct.FilterQuery) ([]entities.ClientRequest, error) {
 	var res []entities.ClientRequest
-	query := "SELECT * FROM client_requests WHERE client_id = ?"
+	query := "SELECT * FROM client_requests WHERE client_id = $1"
+
+	if queryParams.Query != "" && queryParams.Filter != "" {
+		query = fmt.Sprintf("%s AND LOWER(%s) LIKE '%%%s%%'", query, queryParams.Filter, strings.ToLower(queryParams.Query))
+	}
+
+	if queryParams.SortBy != "" {
+		if queryParams.SortDesc {
+			query = fmt.Sprintf("%s ORDER BY %s DESC", query, queryParams.SortBy)
+		} else {
+			query = fmt.Sprintf("%s ORDER BY %s ASC", query, queryParams.SortBy)
+		}
+	} else {
+		query = fmt.Sprintf("%s ORDER BY price ASC", query)
+	}
+	//to set the page number and the qty that need to display in a single responce
+	if queryParams.Limit != 0 && queryParams.Page != 0 {
+		query = fmt.Sprintf("%s LIMIT %d OFFSET %d", query, queryParams.Limit, (queryParams.Page-1)*queryParams.Limit)
+	}
+	if queryParams.Limit == 0 || queryParams.Page == 0 {
+		query = fmt.Sprintf("%s LIMIT 10 OFFSET 0", query)
+	}
+
 	if err := project.DB.Raw(query, clientId).Scan(&res).Error; err != nil {
 		return []entities.ClientRequest{}, err
 	}
 	return res, nil
 }
 
-func (project *ProjectAdapter) GetAllClientRequestForFreelancers(categoryId int) ([]entities.ClientRequest, error) {
+func (project *ProjectAdapter) GetAllClientRequestForFreelancers(categoryId int, queryParams helperstruct.FilterQuery) ([]entities.ClientRequest, error) {
 	var res []entities.ClientRequest
 
-	query := "SELECT * FROM client_requests WHERE category_id = ?"
+	query := "SELECT * FROM client_requests WHERE category_id = $1"
+
+	if queryParams.Query != "" && queryParams.Filter != "" {
+		query = fmt.Sprintf("%s AND LOWER(%s) LIKE '%%%s%%'", query, queryParams.Filter, strings.ToLower(queryParams.Query))
+	}
+
+	if queryParams.SortBy != "" {
+		if queryParams.SortDesc {
+			query = fmt.Sprintf("%s ORDER BY %s DESC", query, queryParams.SortBy)
+		} else {
+			query = fmt.Sprintf("%s ORDER BY %s ASC", query, queryParams.SortBy)
+		}
+	} else {
+		query = fmt.Sprintf("%s ORDER BY price ASC", query)
+	}
+	//to set the page number and the qty that need to display in a single responce
+	if queryParams.Limit != 0 && queryParams.Page != 0 {
+		query = fmt.Sprintf("%s LIMIT %d OFFSET %d", query, queryParams.Limit, (queryParams.Page-1)*queryParams.Limit)
+	}
+	if queryParams.Limit == 0 || queryParams.Page == 0 {
+		query = fmt.Sprintf("%s LIMIT 10 OFFSET 0", query)
+	}
+
 	if err := project.DB.Raw(query, categoryId).Scan(&res).Error; err != nil {
 		return []entities.ClientRequest{}, err
 	}
@@ -162,7 +232,7 @@ func (project *ProjectAdapter) GetAllClientRequestIntrest(reqId string) ([]entit
 	var res []entities.Intrest
 
 	query := "SELECT * FROM intrests WHERE client_request_id = ?"
-	if err := project.DB.Raw(query, reqId).Scan(res).Error; err != nil {
+	if err := project.DB.Raw(query, reqId).Scan(&res).Error; err != nil {
 		return []entities.Intrest{}, err
 	}
 	return res, nil
@@ -174,6 +244,24 @@ func (project *ProjectAdapter) GetClientIdByRequestId(reqId string) (string, err
 	query := "SELECT client_id FROM client_requests WHERE id = ?"
 	if err := project.DB.Raw(query, reqId).Scan(&res).Error; err != nil {
 		return "", err
+	}
+	return res, nil
+}
+
+func (project *ProjectAdapter) ClientAddIntrestAcknowledgment(req entities.IntrestAcknowledgment) error {
+	id := uuid.New()
+	query := "INSERT INTO intrest_acknowledgments (id, client_id, intrest_id) VALUES ($1, $2, $3)"
+	if err := project.DB.Exec(query, id, req.ClientId, req.IntrestId).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (project *ProjectAdapter) GetIntrestById(id string) (entities.Intrest, error) {
+	var res entities.Intrest
+	query := "SELECT * FROM intrests WHERE id = ?"
+	if err := project.DB.Raw(query, id).Scan(&res).Error; err != nil {
+		return entities.Intrest{}, err
 	}
 	return res, nil
 }

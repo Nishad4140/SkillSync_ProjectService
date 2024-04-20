@@ -57,3 +57,10 @@ type Intrest struct {
 	GigId           uuid.UUID
 	Gig             Gig `gorm:"foreignKey:GigId"`
 }
+
+type IntrestAcknowledgment struct {
+	Id        uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ClientId  uuid.UUID
+	IntrestId uuid.UUID
+	Intrest   Intrest `gorm:"foreignKey:IntrestId"`
+}
