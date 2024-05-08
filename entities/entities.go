@@ -17,6 +17,7 @@ type Gig struct {
 	PackageType   PackageType `gorm:"foreignKey:PackageTypeId"`
 	Price         float64
 	DeliveryDays  string
+	IsPrivate     bool `gorm:"default:false"`
 }
 
 type ClientRequest struct {
@@ -63,4 +64,39 @@ type IntrestAcknowledgment struct {
 	ClientId  uuid.UUID
 	IntrestId uuid.UUID
 	Intrest   Intrest `gorm:"foreignKey:IntrestId"`
+}
+
+type Project struct {
+	Id           uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ClientId     uuid.UUID
+	FreelancerId uuid.UUID
+	GigId        uuid.UUID
+	StartDate    time.Time `gorm:"type:date"`
+	EndDate      time.Time `gorm:"type:date"`
+	Status       string
+	Price        float64
+	IsManagement bool
+	IsPaid       bool `gorm:"default:false"`
+}
+
+type ProjectManagement struct {
+	Id            uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ProjectId     uuid.UUID
+	Project       Project `gorm:"foreignKey:ProjectId"`
+	ModulesNumber int
+}
+type Module struct {
+	Id                uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ManagementId      uuid.UUID
+	ProjectManagement ProjectManagement `gorm:"foreignKey:ManagementId"`
+	ModuleName        string
+	ModuleDescription string
+	Status            int `gorm:"default:0"`
+}
+type ProjectFiles struct {
+	Id        uuid.UUID `gorm:"primaryKey;unique;not null"`
+	ProjectId uuid.UUID
+	Project   Project `gorm:"foreignKey:ProjectId"`
+	File      string
+	IsPaid    bool `gorm:"default:false"`
 }

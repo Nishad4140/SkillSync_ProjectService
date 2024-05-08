@@ -8,3 +8,14 @@ type FilterQuery struct {
 	SortBy   string `json:"sort_by"` //to specify column to set the sorting
 	SortDesc bool   `json:"sort_desc"`
 }
+
+type ProjectManagement struct {
+	IsManagementNeeded bool
+	ModuleNumber       int
+	ProjectId          string
+}
+
+type ModuleManagement struct {
+	ModuleDetails     []string
+	ManagementId      string
+}

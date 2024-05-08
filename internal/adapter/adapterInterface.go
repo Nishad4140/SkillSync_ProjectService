@@ -28,5 +28,20 @@ type AdapterInterface interface {
 	ClientAddIntrestAcknowledgment(req entities.IntrestAcknowledgment) error
 	GetIntrestById(id string) (entities.Intrest, error)
 
+	CreateProject(req entities.Project) (entities.Project, error)
+	UpdateProject(req entities.Project) error
+	GetProject(projectId string) (entities.Project, error)
+	GetAllProjects(req entities.Project) ([]entities.Project, error)
+	RemoveProjects(projectId string) error
+	FreelancerUpdateStatus(req entities.Project) error
+	ProjectManagement(req helperstruct.ProjectManagement) (string, error)
+	ModuleManagement(req helperstruct.ModuleManagement) error
+	ModuleStatusUpdate(req entities.Module) error
+	GetManagementByProjectId(projectId string) (entities.ProjectManagement, error)
+	GetModuleByManagementId(projectId string) ([]entities.Module, error)
+	UpdatePaymentStatus(projectId string) error
+	UploadFile(file, projectId string) (string, error)
+	GetFile(projectId string) (entities.ProjectFiles, error)
+
 	GetAllGigs(queryParams helperstruct.FilterQuery) ([]entities.Gig, error)
 }

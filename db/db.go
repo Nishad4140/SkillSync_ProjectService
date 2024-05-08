@@ -22,6 +22,10 @@ func InitDB(connectTo string) (*gorm.DB, error) {
 		&entities.ClientRequestImages{},
 		&entities.Intrest{},
 		&entities.IntrestAcknowledgment{},
+		&entities.Project{},
+		&entities.ProjectFiles{},
+		&entities.ProjectManagement{},
+		&entities.Module{},
 	)
 
 	return db, nil
