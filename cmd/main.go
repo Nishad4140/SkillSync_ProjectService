@@ -23,12 +23,12 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	userConn, err := grpc.Dial("ss-user-service:4001", grpc.WithInsecure())
+	userConn, err := grpc.Dial("user-service:4001", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("error while connecting to user service")
 	}
 
-	notiConn, err := grpc.Dial("ss-notification-service:4007", grpc.WithInsecure())
+	notiConn, err := grpc.Dial("notification-service:4007", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("error while connecting to notification service")
 	}
